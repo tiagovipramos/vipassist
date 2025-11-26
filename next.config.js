@@ -43,6 +43,9 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'date-fns'], // Tree-shaking otimizado
   },
   
+  // ✅ CRÍTICO: Habilitar output standalone para Docker
+  output: 'standalone',
+  
   // Configurações de bundle
   webpack: (config, { isServer }) => {
     // Otimizar chunks para melhor caching
