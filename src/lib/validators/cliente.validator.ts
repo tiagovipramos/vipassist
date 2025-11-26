@@ -37,8 +37,8 @@ export const updateClienteSchema = createClienteSchema.partial()
 export const listClientesQuerySchema = z.object({
   search: z.string().optional(),
   ativo: z.enum(['true', 'false']).transform(val => val === 'true').optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('20'),
+  page: z.string().regex(/^\d+$/).transform(Number).default(1),
+  limit: z.string().regex(/^\d+$/).transform(Number).default(20),
 })
 
 // Tipos TypeScript inferidos dos schemas
