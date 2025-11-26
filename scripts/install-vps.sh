@@ -212,10 +212,10 @@ sleep 30
 # ============================================
 log_info "Aplicando migrations do banco de dados..."
 
-docker compose -f docker-compose.full.yml exec -T app npx prisma migrate deploy || {
+docker compose -f docker-compose.full.yml exec -T app node_modules/.bin/prisma migrate deploy || {
     log_warning "Erro ao aplicar migrations. Tentando novamente em 10 segundos..."
     sleep 10
-    docker compose -f docker-compose.full.yml exec -T app npx prisma migrate deploy
+    docker compose -f docker-compose.full.yml exec -T app node_modules/.bin/prisma migrate deploy
 }
 
 log_success "Migrations aplicadas"
