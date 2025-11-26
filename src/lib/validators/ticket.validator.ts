@@ -10,7 +10,7 @@ export const createTicketSchema = z.object({
   clienteId: z.string().cuid('ID do cliente inválido'),
   veiculoId: z.string().cuid('ID do veículo inválido').optional(),
   tipoServico: z.enum(['reboque', 'pneu', 'chaveiro', 'bateria', 'combustivel', 'mecanica'], {
-    errorMap: () => ({ message: 'Tipo de serviço inválido' })
+    message: 'Tipo de serviço inválido'
   }),
   descricaoProblema: z.string()
     .min(10, 'Descrição deve ter no mínimo 10 caracteres')
