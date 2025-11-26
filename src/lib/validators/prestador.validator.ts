@@ -58,8 +58,8 @@ export const listPrestadoresQuerySchema = z.object({
   status: z.enum(['ativo', 'inativo', 'pendente', 'bloqueado']).optional(),
   disponivel: z.enum(['true', 'false']).transform(val => val === 'true').optional(),
   servico: z.enum(['reboque', 'pneu', 'chaveiro', 'bateria', 'combustivel', 'mecanica']).optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('20'),
+  page: z.string().regex(/^\d+$/).transform(Number).default(1),
+  limit: z.string().regex(/^\d+$/).transform(Number).default(20),
 })
 
 // Schema para buscar prestadores próximos

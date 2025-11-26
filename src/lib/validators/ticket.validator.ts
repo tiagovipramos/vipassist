@@ -53,8 +53,8 @@ export const listTicketsQuerySchema = z.object({
   prioridade: z.enum(['baixa', 'media', 'alta', 'critica']).optional(),
   clienteId: z.string().cuid().optional(),
   prestadorId: z.string().cuid().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('20'),
+  page: z.string().regex(/^\d+$/).transform(Number).default(1),
+  limit: z.string().regex(/^\d+$/).transform(Number).default(20),
   dataInicio: z.string().datetime().optional(),
   dataFim: z.string().datetime().optional(),
 })
