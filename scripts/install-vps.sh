@@ -159,14 +159,14 @@ fi
 log_info "Gerando senhas seguras..."
 
 # Gerar senha do PostgreSQL
-POSTGRES_PASSWORD=$(openssl rand -base64 32)
-NEXTAUTH_SECRET=$(openssl rand -base64 32)
-BACKUP_ENCRYPTION_KEY=$(openssl rand -base64 32)
+POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/')
+NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/')
+BACKUP_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/')
 
-# Atualizar .env (escapar caracteres especiais)
-sed -i "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"|" .env
-sed -i "s|NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
-sed -i "s|BACKUP_ENCRYPTION_KEY=.*|BACKUP_ENCRYPTION_KEY=\"$BACKUP_ENCRYPTION_KEY\"|" .env
+# Atualizar .env usando grep e substituição direta
+grep -v "^POSTGRES_PASSWORD=" .env > .env.tmp && echo "POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"" >> .env.tmp && mv .env.tmp .env
+grep -v "^NEXTAUTH_SECRET=" .env > .env.tmp && echo "NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"" >> .env.tmp && mv .env.tmp .env
+grep -v "^BACKUP_ENCRYPTION_KEY=" .env > .env.tmp && echo "BACKUP_ENCRYPTION_KEY=\"$BACKUP_ENCRYPTION_KEY\"" >> .env.tmp && mv .env.tmp .env
 
 log_success "Senhas geradas e configuradas"
 
