@@ -17,8 +17,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
-# Instalar dependências
-RUN npm ci --only=production && \
+# Instalar TODAS as dependências (incluindo devDependencies para o build)
+RUN npm ci && \
     npm cache clean --force
 
 # Gerar Prisma Client
@@ -31,7 +31,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar dependências do stage anterior
+# Copiar node_modules com TODAS as dependências
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
