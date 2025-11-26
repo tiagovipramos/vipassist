@@ -1,0 +1,465 @@
+# 🚀 DOCUMENTO OFICIAL – SISTEMA VIP ASSIST
+
+### Norte completo para desenvolvimento
+
+---
+
+# 1. PROPÓSITO DO SISTEMA
+
+Criar uma plataforma de Assistência 24h que permita:
+
+ Receber chamados de assistência veicular.
+ Distribuir chamados para prestadores via link (sem app).
+ Rastrear prestadores em tempo real através do navegador.
+ Permitir que o cliente acompanhe a chegada do prestador via link.
+ Controlar operação, SLA e pagamentos pela central.
+ Integrar com Mapbox para mapas, rotas e ETA.
+
+O objetivo é ser leve, rápido e totalmente web, evitando necessidade de app e reduzindo custo operacional.
+
+---
+
+# 2. PÚBLICOS DO SISTEMA
+
+1. Central / Atendentes
+
+    Abertura de chamados
+    Atribuição de prestadores
+    Acompanhamento
+
+2. Gestor / Administrador
+
+    Dashboards
+    Relatórios
+    Configurações do sistema
+
+3. Prestador (via link)
+
+    Aceita o chamado
+    Ativa rastreamento
+    Envia status e finalização
+
+4. Cliente (via link)
+
+    Visualiza mapa com rastreamento
+    ETA
+    Dados do prestador
+
+---
+
+# 3. VISÃO GERAL DO MVP
+
+O MVP deve entregar:
+
+ Painel completo da central
+ Criação de chamados
+ Distribuição para prestadores
+ Aceite via link
+ Rastreamento via Mapbox (sem app)
+ Link de acompanhamento para o cliente
+ Finalização do atendimento
+ Financeiro simples
+ Relatórios básicos
+ Configurações gerais
+ Controle de usuários
+
+Tudo 100% web.
+
+---
+
+# 4. ARQUITETURA DO SISTEMA (NÍVEL ALTO)
+
+## Front-end
+
+ React
+ Mapbox GL JS
+ WebSockets para atualização instantânea
+
+## Back-end
+
+ Node.js
+ REST API
+ WebSocket Server
+ JWT/Auth básica
+ Serviço de GPS Receiver (para prestadores)
+
+## Banco de Dados
+
+ MySQL
+
+## Serviços externos
+
+ Mapbox (mapas, rotas, direções, ETA)
+
+
+# 5. FLUXO COMPLETO DA OPERAÇÃO
+
+### 1. Chamado criado pela central
+
+ Atendente coleta dados do cliente
+ Local via GPS ou endereço
+ Tipo da ocorrência
+ Observações
+ Sistema gera protocolo
+
+---
+
+### 2. Seleção do prestador
+
+ Painel lista prestadores da região
+ Atendente seleciona e ao clicar, direciona no whatsapp web para o atendente selecionar os prestadores para pedir cotação.
+
+---
+
+### 3. Envio do link de aceite
+
+Sistema gera:
+
+```
+https://seusistema.com/aceitar/{token_prestador}
+```
+
+Prestador recebe via WhatsApp.
+
+---
+
+### 4. Prestador aceita via navegador
+
+Na tela:
+
+ resumo do atendimento
+ botão "ACEITAR"
+ botão "RECUSAR"
+
+Ao aceitar:
+
+✔ Chamado muda para “Prestador a caminho”
+✔ Sistema pede permissão: “Permitir localização?”
+✔ Rastreamento inicia
+
+---
+
+### 5. Link para o cliente acompanhar
+
+Sistema gera:
+
+```
+https://seusistema.com/acompanhar/{token_cliente}
+```
+
+Cliente vê:
+
+ mapa com prestador em tempo real
+ ETA
+ Nome do prestador (opcional)
+ Contato da central
+
+---
+
+### 6. Rastreamento em tempo real
+
+O navegador do prestador:
+
+ envia localização a cada 10 segundos
+ funciona com tela bloqueada usando:
+
+   Background Sync
+   Wake Lock API
+   Service Worker
+
+Central e cliente recebem as atualizações via WebSocket e visualizam no mapa.
+
+---
+
+### 7. Finalização
+
+Prestador, pelo link:
+
+ Marca como concluído
+ Adiciona fotos no local do destino com marcação automatica de localização feita pelo sistema
+ Coloca observações
+
+Central confirma.
+
+---
+
+### 8. Financeiro
+
+Cada atendimento finalizado gera:
+
+ valor fixo por tipo
+ adicionais (KM extra)
+ status pagamento: pendente / aprovado / pago
+ exportação Excel
+
+---
+
+# 6. MÓDULOS DO MVP
+
+---
+
+## 🔵 6.1. Módulo Chamados
+
+Funções:
+
+ Criar chamado
+ Listar chamados
+ Filtros
+ Ver timeline
+ Ver localização do prestador
+ Reatribuir prestador
+ Finalizar chamado
+ Cancelar chamado
+
+Campos principais:
+
+ Cliente
+ Veículo
+ Tipo de ocorrência
+ Localização
+ Prestador
+ Status
+ Histórico de eventos
+
+---
+
+## 🔵 6.2. Módulo Prestadores
+
+Funções:
+
+ Cadastro
+ Área de atendimento
+ Tipos de serviços
+ Status (online/offline)
+ Histórico
+ Avaliações (futuro)
+
+Subtelas:
+
+ Lista
+ Detalhes
+ Histórico
+
+---
+
+## 🔵 6.3. Módulo Clientes
+
+Funções:
+
+ Cadastro
+ Listagem
+ Vincular veículo
+ Situação (ativo/inadimplente via API opcional)
+
+---
+
+## 🔵 6.4. Módulo Financeiro (Simples)
+
+Funções:
+
+ Tabela de preços
+ Lista de atendimentos pendentes
+ Aprovar pagamento
+ Exportar CSV
+
+---
+
+## 🔵 6.5. Módulo Relatórios
+
+Tipos:
+
+ Operacional
+ Financeiro
+ Prestadores
+ SLA
+
+---
+
+## 🔵 6.6. Módulo Configurações
+
+Funções:
+
+ Dados da empresa
+ Logo
+ Cores
+ SLA dos serviços
+ Time de aceitação do link
+ Regras de distribuição
+ API keys Mapbox
+ Templates de mensagens
+
+---
+
+## 🔵 6.7. Módulo Usuários e Permissões
+
+Funções:
+
+ Criar usuário
+ Definir função (atendente, gestor, admin)
+ Permissões por menu
+ Restringir ações
+
+---
+
+## 🔵 6.8. Módulo de Logs
+
+Logs de:
+
+ rastreamento
+ envio de links
+ alterações de chamado
+ acessos
+
+---
+
+# 7. MENU DO SISTEMA (OFICIAL)
+
+📌 Dashboard
+📌 Chamados
+   ├ Criar Chamado
+   ├ Lista de Chamados
+   ├ Mapa ao Vivo
+📌 Distribuição
+📌 Prestadores
+   ├ Lista
+   ├ Cadastro
+   ├ Acompanhamento
+📌 Clientes
+   ├ Lista
+   ├ Cadastro
+📌 Financeiro
+   ├ Pagamentos
+   ├ Tabela de Preços
+📌 Relatórios
+📌 Configurações
+📌 Usuários & Permissões
+📌 Logs & Auditoria
+```
+
+---
+
+# 8. BANCO DE DADOS (CONCEITUAL)
+
+Sem estrutura técnica, apenas entidades:
+
+### Clientes
+
+ nome
+ CPF
+ telefone
+ e-mail
+
+### Veículos
+
+ placa
+ modelo
+ ano
+ cliente_id
+
+### Prestadores
+
+ nome
+ telefone
+ tipo de serviço
+ área de atendimento
+ status
+
+### Chamados
+
+ cliente_id
+ veículo_id
+ tipo
+ latitude
+ longitude
+ status
+ prestador_id
+ token_aceite
+ token_rastreamento
+ timestamps
+
+### Localizações (rastreio)
+
+ chamado_id
+ prestador_id
+ lat/lng
+ timestamp
+
+### Pagamentos
+
+ prestador_id
+ chamado_id
+ valor
+ status
+
+### Usuários
+
+ nome
+ e-mail
+ papel
+ senha
+
+### Logs
+
+ ação
+ usuário_id
+ descrição
+ data
+
+---
+
+# 9. REQUISITOS FUNCIONAIS
+
+1. Sistema deve criar chamados com protocolo.
+2. Deve gerar link único para prestador aceitar.
+3. Prestador deve aceitar sem app.
+4. Deve rastrear prestador em tempo real via navegador.
+5. Deve funcionar com o celular bloqueado (wake lock + background sync).
+6. Cliente deve acompanhar via link público.
+7. Atendente deve visualizar mapa ao vivo.
+8. Atendente deve gerenciar SLA.
+9. Sistema deve permitir finalização.
+10. Prestador deve inserir infos básicas ao finalizar.
+11. Financeiro deve gerar pendências e valores.
+
+---
+
+# 10. REQUISITOS TÉCNICOS
+
+ Uso do Mapbox GL JS para mapas 3D.
+ Uso do Mapbox Directions API para rotas e ETA.
+ Uso do Mapbox Matrix API para escolher prestador mais próximo.
+ Uso de WebSockets para atualização de mapa.
+ Uso de Service Worker + Background Sync no navegador do prestador.
+ Tokens únicos para segurança dos links.
+ Backend com autenticação JWT para painel.
+ Logs de auditoria obrigatórios.
+
+---
+
+# 11. REGRAS DE NEGÓCIO IMPORTANTES
+
+1. Chamado só pode ser aceito por 1 prestador por vez.
+2. Tempo para prestador aceitar é configurável (ex: 2 minutos).
+3. Se prestador não aceitar → sistema libera para outro.
+4. Prestador deve enviar posição automaticamente até finalizar.
+5. Chamado não pode ser finalizado sem localização mínima registrada.
+6. Cliente só vê rastreamento, nunca detalhes internos.
+
+---
+
+# 12. ENTREGA FINAL DO MVP
+
+O sistema é considerado entregue quando:
+
+ Chamado abre
+ Prestador aceita via link
+ Cliente acompanha via link
+ Mapa mostra prestador em tempo real
+ Finalização registrada
+ Painel operacional funcionando
+ Financeiro funcionando
+ Logs funcionando
+ Configurações funcionando
+ Mapbox integrado totalmente
+
+

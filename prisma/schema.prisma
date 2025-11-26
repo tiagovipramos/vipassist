@@ -1,0 +1,524 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// USUÁRIOS E AUTENTICAÇÃO
+// ==========================================
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      String   @default("atendente") // admin, supervisor, atendente
+  ativo     Boolean  @default(true)
+  avatar    String?
+  telefone  String?
+  setorId   String?
+  
+  // Status online/offline em tempo real
+  ultimoHeartbeat DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relações
+  tickets   Ticket[]
+  mensagens Mensagem[]
+  setor     Setor?   @relation(fields: [setorId], references: [id])
+  
+  @@index([email])
+  @@index([role])
+  @@index([ativo])
+  @@index([setorId])
+  @@map("usuarios")
+}
+
+// ==========================================
+// SETORES
+// ==========================================
+
+model Setor {
+  id          String   @id @default(cuid())
+  nome        String   @unique
+  descricao   String?
+  icone       String?  // emoji ou nome do ícone
+  cor         String?  // cor hex para identificação visual
+  ativo       Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relações
+  usuarios    Usuario[]
+  
+  @@map("setores")
+}
+
+// ==========================================
+// CLIENTES
+// ==========================================
+
+model Cliente {
+  id            String   @id @default(cuid())
+  nome          String
+  email         String?
+  telefone      String
+  cpf           String?  @unique
+  dataNascimento DateTime?
+  
+  // Endereço
+  cep           String?
+  logradouro    String?
+  numero        String?
+  complemento   String?
+  bairro        String?
+  cidade        String?
+  estado        String?
+  
+  // Plano/Seguro
+  plano         String?
+  numeroApolice String?
+  seguradora    String?
+  
+  ativo         Boolean  @default(true)
+  observacoes   String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relações
+  tickets       Ticket[]
+  veiculos      Veiculo[]
+  
+  @@index([telefone])
+  @@index([email])
+  @@index([ativo])
+  @@index([createdAt])
+  @@map("clientes")
+}
+
+// ==========================================
+// VEÍCULOS
+// ==========================================
+
+model Veiculo {
+  id          String   @id @default(cuid())
+  clienteId   String
+  
+  placa       String   @unique
+  marca       String?
+  modelo      String?
+  ano         Int?
+  cor         String?
+  renavam     String?
+  chassi      String?
+  
+  ativo       Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relações
+  cliente     Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  tickets     Ticket[]
+  
+  @@index([clienteId])
+  @@index([ativo])
+  @@map("veiculos")
+}
+
+// ==========================================
+// PRESTADORES
+// ==========================================
+
+model Prestador {
+  id              String   @id @default(cuid())
+  nome            String
+  razaoSocial     String?
+  tipoPessoa      String   // fisica, juridica
+  cpf             String?  @unique
+  cnpj            String?  @unique
+  
+  email           String   @unique
+  telefone        String
+  celular         String?
+  
+  // Endereço
+  cep             String
+  logradouro      String
+  numero          String
+  complemento     String?
+  bairro          String
+  cidade          String
+  estado          String
+  
+  // Serviços (JSON array de IDs)
+  servicos        Json     // JSON: ["reboque", "pneu", "chaveiro"]
+  raioAtuacao     Int      @default(50)
+  
+  // Dados Bancários
+  pixChave        String?
+  banco           String?
+  agencia         String?
+  conta           String?
+  tipoConta       String?
+  
+  // Status
+  status          String   @default("pendente") // ativo, inativo, pendente, bloqueado
+  disponivel      Boolean  @default(true)
+  
+  // Avaliação
+  avaliacaoMedia  Float    @default(0)
+  totalAtendimentos Int    @default(0)
+  
+  // Localização
+  latitude        Float?
+  longitude       Float?
+  ultimaAtualizacaoLocalizacao DateTime?
+  
+  observacoes     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relações
+  tickets         Ticket[]
+  documentos      DocumentoPrestador[]
+  avaliacoes      AvaliacaoPrestador[]
+  
+  @@index([status])
+  @@index([disponivel])
+  @@index([cidade])
+  @@index([estado])
+  @@index([avaliacaoMedia])
+  @@index([latitude, longitude])
+  @@map("prestadores")
+}
+
+model DocumentoPrestador {
+  id            String   @id @default(cuid())
+  prestadorId   String
+  
+  tipo          String   // CNH, Alvará, Licença, etc
+  numero        String
+  validade      DateTime?
+  arquivo       String?  // URL do arquivo
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relações
+  prestador     Prestador @relation(fields: [prestadorId], references: [id], onDelete: Cascade)
+  
+  @@map("documentos_prestadores")
+}
+
+// ==========================================
+// TICKETS / CHAMADOS
+// ==========================================
+
+model Ticket {
+  id                String   @id @default(cuid())
+  protocolo         String   @unique
+  
+  // Cliente e Veículo
+  clienteId         String
+  veiculoId         String?
+  
+  // Tipo de Serviço
+  tipoServico       String   // reboque, pneu, chaveiro, etc
+  descricaoProblema String
+  
+  // Localização
+  origemCep         String?
+  origemEndereco    String
+  origemCidade      String
+  origemLatitude    Float?
+  origemLongitude   Float?
+  
+  destinoCep        String?
+  destinoEndereco   String?
+  destinoCidade     String?
+  destinoLatitude   Float?
+  destinoLongitude  Float?
+  
+  distanciaKm       Float?
+  
+  // Status e Prioridade
+  status            String   @default("aberto") // aberto, em_andamento, concluido, cancelado
+  prioridade        String   @default("media") // baixa, media, alta, critica
+  
+  // Prestador
+  prestadorId       String?
+  valorCotado       Float?
+  valorFinal        Float?
+  
+  // Atendimento
+  atendenteId       String?
+  dataAbertura      DateTime @default(now())
+  dataAtribuicao    DateTime?
+  dataInicio        DateTime?
+  dataConclusao     DateTime?
+  dataCancelamento  DateTime?
+  
+  // Tempos
+  tempoEspera       Int?     // em minutos
+  tempoAtendimento  Int?     // em minutos
+  
+  // Avaliação
+  avaliacaoCliente  Int?     // 1-5
+  comentarioCliente String?
+  
+  // Foto de conclusão
+  fotoConclusao     String?  // URL da foto tirada pelo prestador
+  
+  // Localização da conclusão (onde o prestador finalizou)
+  conclusaoCep         String?
+  conclusaoEndereco    String?
+  conclusaoCidade      String?
+  conclusaoLatitude    Float?
+  conclusaoLongitude   Float?
+  
+  // Comprovante de pagamento
+  comprovantePagamento String?  // URL do comprovante de pagamento
+  
+  observacoes       String?
+  motivoCancelamento String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relações
+  cliente           Cliente   @relation(fields: [clienteId], references: [id])
+  veiculo           Veiculo?  @relation(fields: [veiculoId], references: [id])
+  prestador         Prestador? @relation(fields: [prestadorId], references: [id])
+  atendente         Usuario?  @relation(fields: [atendenteId], references: [id])
+  mensagens         Mensagem[]
+  historico         HistoricoTicket[]
+  
+  @@index([status])
+  @@index([prioridade])
+  @@index([dataAbertura])
+  @@index([clienteId])
+  @@index([prestadorId])
+  @@index([atendenteId])
+  @@index([tipoServico])
+  @@index([status, prioridade])
+  @@index([status, dataAbertura])
+  @@index([clienteId, status])
+  @@index([prestadorId, status])
+  @@map("tickets")
+}
+
+model HistoricoTicket {
+  id          String   @id @default(cuid())
+  ticketId    String
+  
+  tipo        String   // status_alterado, prestador_atribuido, mensagem_enviada, etc
+  descricao   String
+  usuarioId   String?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relações
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId])
+  @@index([createdAt])
+  @@map("historico_tickets")
+}
+
+// ==========================================
+// MENSAGENS / CHAT
+// ==========================================
+
+model Mensagem {
+  id          String   @id @default(cuid())
+  ticketId    String
+  usuarioId   String?
+  
+  tipo        String   @default("texto") // texto, imagem, arquivo, audio
+  conteudo    String
+  arquivo     String?  // URL do arquivo
+  
+  lida        Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  // Relações
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  
+  @@index([ticketId])
+  @@index([usuarioId])
+  @@index([lida])
+  @@index([createdAt])
+  @@map("mensagens")
+}
+
+// ==========================================
+// AVALIAÇÕES
+// ==========================================
+
+model AvaliacaoPrestador {
+  id            String   @id @default(cuid())
+  prestadorId   String
+  ticketId      String
+  clienteId     String
+  
+  nota          Int      // 1-5
+  comentario    String?
+  
+  createdAt     DateTime @default(now())
+  
+  // Relações
+  prestador     Prestador @relation(fields: [prestadorId], references: [id], onDelete: Cascade)
+  
+  @@index([prestadorId])
+  @@index([ticketId])
+  @@index([clienteId])
+  @@index([nota])
+  @@map("avaliacoes_prestadores")
+}
+
+// ==========================================
+// PAGAMENTOS
+// ==========================================
+
+model Pagamento {
+  id              String   @id @default(cuid())
+  ticketProtocolo String
+  
+  valor           Float
+  metodoPagamento String   // pix, cartao, dinheiro, boleto
+  status          String   @default("pendente") // pendente, pago, cancelado
+  
+  dataPagamento   DateTime?
+  comprovante     String?  // URL do comprovante
+  
+  observacoes     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([ticketProtocolo])
+  @@index([status])
+  @@index([metodoPagamento])
+  @@index([dataPagamento])
+  @@map("pagamentos")
+}
+
+// ==========================================
+// TABELA DE PREÇOS
+// ==========================================
+
+model TabelaPreco {
+  id              String   @id @default(cuid())
+  tipoServico     String   @unique // reboque, pneu, chaveiro, bateria, combustivel, mecanica
+  nome            String   // Nome do serviço
+  descricao       String?  // Descrição do serviço
+  precoBase       Float    // Preço base do serviço
+  precoKmAdicional Float?  // Preço por km adicional (para reboque)
+  ativo           Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([ativo])
+  @@map("tabela_precos")
+}
+
+// ==========================================
+// NOTIFICAÇÕES
+// ==========================================
+
+model Notificacao {
+  id          String   @id @default(cuid())
+  usuarioId   String?
+  
+  tipo        String   // mensagem, ticket, sistema, atendente, pagamento
+  titulo      String
+  descricao   String
+  icone       String   // emoji para exibição
+  link        String?
+  
+  lida        Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([usuarioId])
+  @@index([lida])
+  @@index([createdAt])
+  @@map("notificacoes")
+}
+
+// ==========================================
+// LOGS DO SISTEMA
+// ==========================================
+
+model Log {
+  id          String   @id @default(cuid())
+  
+  // Tipo de ação
+  tipo        String   // sistema, usuario, ticket, prestador, cliente, pagamento, erro
+  acao        String   // criar, editar, deletar, login, logout, erro, etc
+  
+  // Detalhes
+  descricao   String
+  entidade    String?  // Nome da entidade afetada (ex: "Ticket", "Usuario")
+  entidadeId  String?  // ID da entidade afetada
+  
+  // Usuário responsável
+  usuarioId   String?
+  usuarioNome String?
+  usuarioEmail String?
+  
+  // Dados adicionais (JSON)
+  metadados   Json?    // JSON com informações extras
+  
+  // Severidade
+  nivel       String   @default("info") // debug, info, warning, error, critical
+  
+  // IP e User Agent
+  ip          String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([tipo])
+  @@index([acao])
+  @@index([nivel])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@map("logs")
+}
+
+// ==========================================
+// PERMISSÕES
+// ==========================================
+
+model Permissao {
+  id          String   @id @default(cuid())
+  role        String   // admin, gestor, atendente
+  modulo      String   // geral, operacional, gestao, administrativo, suporte
+  permissao   String   // dashboard, chamados, criar_chamado, lista_chamados, etc
+  ativo       Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([role, modulo, permissao])
+  @@index([role])
+  @@index([ativo])
+  @@map("permissoes")
+}
