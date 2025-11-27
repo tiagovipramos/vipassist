@@ -141,20 +141,7 @@ fi
 log_success "Repositório clonado"
 
 # ============================================
-# 7. CONFIGURAR VARIÁVEIS DE AMBIENTE
-# ============================================
-log_info "Configurando variáveis de ambiente..."
-
-if [ ! -f ".env" ]; then
-    cp .env.production.example .env
-    log_warning "Arquivo .env criado. VOCÊ PRECISA CONFIGURÁ-LO!"
-    log_warning "Execute: nano /opt/vipassist/.env"
-else
-    log_info "Arquivo .env já existe"
-fi
-
-# ============================================
-# 8. GERAR SENHAS SEGURAS
+# 7. GERAR SENHAS SEGURAS
 # ============================================
 log_info "Gerando senhas seguras..."
 
@@ -163,15 +150,26 @@ POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/+=' | head -c
 NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/+=' | head -c 32)
 BACKUP_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr -d '\n' | tr -d '/+=' | head -c 32)
 
-# Atualizar .env usando sed com delimitador alternativo
-sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"|" .env
-sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
-sed -i "s|^BACKUP_ENCRYPTION_KEY=.*|BACKUP_ENCRYPTION_KEY=\"$BACKUP_ENCRYPTION_KEY\"|" .env
+log_success "Senhas geradas"
 
-# Atualizar DATABASE_URL com a senha gerada
-sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://vipassist:$POSTGRES_PASSWORD@postgres:5432/vipassist?schema=public\"|" .env
+# ============================================
+# 8. CONFIGURAR VARIÁVEIS DE AMBIENTE
+# ============================================
+log_info "Configurando variáveis de ambiente..."
 
-log_success "Senhas geradas e configuradas"
+# Copiar exemplo para arquivo temporário
+cp .env.production.example .env.tmp
+
+# Atualizar arquivo temporário com as senhas geradas
+sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"|" .env.tmp
+sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.tmp
+sed -i "s|^BACKUP_ENCRYPTION_KEY=.*|BACKUP_ENCRYPTION_KEY=\"$BACKUP_ENCRYPTION_KEY\"|" .env.tmp
+sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://vipassist:$POSTGRES_PASSWORD@postgres:5432/vipassist?schema=public\"|" .env.tmp
+
+# Mover arquivo temporário para .env (sobrescreve se existir)
+mv .env.tmp .env
+
+log_success "Arquivo .env configurado com senhas geradas"
 
 # Salvar senhas em arquivo seguro
 cat > /root/vipassist-credentials.txt << EOF
