@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
 export default function Home() {
-  // Redirecionamento server-side (mais confiável em produção)
+  // Redireciona para a página de login
   redirect('/entrar')
 }

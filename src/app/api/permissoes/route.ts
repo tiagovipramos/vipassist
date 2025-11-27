@@ -10,15 +10,65 @@ export async function GET(request: NextRequest) {
 
     // Se for busca por email, buscar usuário e suas permissões
     if (email) {
+      // Definir permissões mockadas por role
+      const permissoesMockadas: Record<string, string[]> = {
+        'admin@vipassist.com': [
+          'geral.dashboard',
+          'operacional.chamados',
+          'operacional.criar_chamado',
+          'operacional.lista_chamados',
+          'operacional.mapa',
+          'operacional.prestadores',
+          'operacional.clientes',
+          'gestao.financeiro',
+          'gestao.relatorios',
+          'administrativo.usuarios',
+          'administrativo.logs',
+          'administrativo.seguranca',
+          'suporte.ajuda',
+          'suporte.api'
+        ],
+        'gerente@vipassist.com': [
+          'geral.dashboard',
+          'operacional.chamados',
+          'operacional.criar_chamado',
+          'operacional.lista_chamados',
+          'operacional.mapa',
+          'operacional.prestadores',
+          'operacional.clientes',
+          'gestao.financeiro',
+          'gestao.relatorios',
+          'administrativo.logs',
+          'administrativo.seguranca',
+          'suporte.ajuda',
+          'suporte.api'
+        ],
+        'atendente@vipassist.com': [
+          'geral.dashboard',
+          'operacional.chamados',
+          'operacional.criar_chamado',
+          'operacional.lista_chamados',
+          'operacional.mapa',
+          'operacional.prestadores',
+          'operacional.clientes',
+          'suporte.ajuda'
+        ]
+      };
+
+      // Tentar buscar usuário no banco
       const usuario = await prisma.usuario.findUnique({
         where: { email }
       });
 
       if (!usuario) {
+        // Se não encontrar no banco, retornar permissões mockadas
+        const permissoesMock = permissoesMockadas[email] || permissoesMockadas['atendente@vipassist.com'];
+        
         return NextResponse.json({
-          success: false,
-          error: 'Usuário não encontrado'
-        }, { status: 404 });
+          success: true,
+          permissoes: permissoesMock,
+          mock: true
+        });
       }
 
       // Buscar permissões ativas do role do usuário
@@ -28,6 +78,18 @@ export async function GET(request: NextRequest) {
           ativo: true
         }
       });
+
+      // Se não houver permissões no banco, usar mockadas baseado no role
+      if (permissoes.length === 0) {
+        const emailMock = `${usuario.role}@vipassist.com`;
+        const permissoesMock = permissoesMockadas[emailMock] || permissoesMockadas['atendente@vipassist.com'];
+        
+        return NextResponse.json({
+          success: true,
+          permissoes: permissoesMock,
+          mock: true
+        });
+      }
 
       // Retornar array de permissões no formato modulo.permissao
       const permissoesArray = permissoes.map(p => `${p.modulo}.${p.permissao}`);

@@ -1,60 +1,110 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/componentes/ui/button'
-import { Input } from '@/componentes/ui/input'
 import { Card } from '@/componentes/ui/card'
 import { useAuthStore } from '@/stores/authStore'
-import { Mail, Lock, ArrowRight, Sparkles, MapPin, Truck, BarChart3, Shield, Check, Users, Clock, TrendingUp } from 'lucide-react'
+import { Shield, Users, Headphones, Crown, MapPin, Truck, BarChart3, Check } from 'lucide-react'
+import { Usuario } from '@/tipos/usuario'
+import { usePermissionsStore } from '@/stores/permissionsStore'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isCarregando, erro, limparErro } = useAuthStore()
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
+  const { setUsuario } = useAuthStore()
+  const { carregarPermissoes } = usePermissionsStore()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    limparErro()
-    
-    if (!email.trim()) {
-      alert('Por favor, preencha o email')
-      return
+  const handleRoleLogin = async (role: 'admin' | 'gerente' | 'atendente') => {
+    // Criar usuário mockado baseado no role
+    const usuariosMock: Record<string, Usuario> = {
+      admin: {
+        id: '1',
+        nome: 'Administrador',
+        email: 'admin@vipassist.com',
+        avatar: 'https://i.pravatar.cc/150?u=admin',
+        perfil: 'admin',
+        role: 'admin',
+        status: 'online',
+        dataCriacao: new Date().toISOString(),
+        ultimoAcesso: new Date().toISOString(),
+        ativo: true
+      },
+      gerente: {
+        id: '2',
+        nome: 'Gerente',
+        email: 'gerente@vipassist.com',
+        avatar: 'https://i.pravatar.cc/150?u=gerente',
+        perfil: 'gerente',
+        role: 'gerente',
+        status: 'online',
+        dataCriacao: new Date().toISOString(),
+        ultimoAcesso: new Date().toISOString(),
+        ativo: true
+      },
+      atendente: {
+        id: '3',
+        nome: 'Atendente',
+        email: 'atendente@vipassist.com',
+        avatar: 'https://i.pravatar.cc/150?u=atendente',
+        perfil: 'atendente',
+        role: 'atendente',
+        status: 'online',
+        dataCriacao: new Date().toISOString(),
+        ultimoAcesso: new Date().toISOString(),
+        ativo: true
+      }
     }
+
+    const usuario = usuariosMock[role]
     
-    if (!senha.trim()) {
-      alert('Por favor, preencha a senha')
-      return
-    }
+    // Definir usuário no store
+    setUsuario(usuario)
     
-    const sucesso = await login(email, senha)
+    // Carregar permissões baseadas no role
+    await carregarPermissoes(usuario.email)
     
-    if (sucesso) {
-      router.push('/painel')
-    }
+    // Redirecionar para o painel
+    router.push('/painel')
   }
 
-  const features = [
+  const roles = [
     {
-      icon: MapPin,
-      title: 'Rastreamento em Tempo Real',
-      description: 'Acompanhe prestadores ao vivo no mapa'
+      id: 'admin',
+      title: 'Administrador',
+      description: 'Acesso total ao sistema',
+      icon: Crown,
+      color: 'from-purple-500 to-purple-600',
+      features: [
+        'Gerenciar usuários e permissões',
+        'Configurações do sistema',
+        'Acesso a todos os módulos',
+        'Relatórios completos'
+      ]
     },
     {
-      icon: Truck,
-      title: 'Gestão de Prestadores',
-      description: 'Controle completo de sua rede'
+      id: 'gerente',
+      title: 'Gerente',
+      description: 'Gerenciamento operacional',
+      icon: Users,
+      color: 'from-blue-500 to-blue-600',
+      features: [
+        'Gerenciar equipe',
+        'Visualizar relatórios',
+        'Aprovar solicitações',
+        'Monitorar operações'
+      ]
     },
     {
-      icon: BarChart3,
-      title: 'Relatórios Completos',
-      description: 'Análises operacionais e financeiras'
-    },
-    {
-      icon: Shield,
-      title: 'Sistema Seguro',
-      description: 'Dados protegidos e auditoria completa'
+      id: 'atendente',
+      title: 'Atendente',
+      description: 'Atendimento ao cliente',
+      icon: Headphones,
+      color: 'from-green-500 to-green-600',
+      features: [
+        'Criar chamados',
+        'Atender clientes',
+        'Visualizar tickets',
+        'Registrar atendimentos'
+      ]
     }
   ]
 
@@ -66,84 +116,67 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Lado Esquerdo - Formulário */}
+      {/* Lado Esquerdo - Seleção de Role */}
       <div className="flex w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:w-1/2">
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-2xl space-y-6">
           {/* Logo e Título */}
           <div className="animate-fade-in text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-secondary to-accent shadow-2xl transition-transform hover:scale-105">
-              <span className="text-3xl font-bold text-white">K</span>
+              <span className="text-3xl font-bold text-white">V</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Bem-vindo de volta!</h1>
-            <p className="mt-2 text-gray-600">Entre com sua conta para acessar o painel</p>
+            <h1 className="text-3xl font-bold text-gray-900">Bem-vindo ao VIP Assist!</h1>
+            <p className="mt-2 text-gray-600">Selecione seu perfil para acessar o sistema</p>
           </div>
 
-          {/* Formulário */}
-          <Card className="animate-slide-up border-0 bg-white p-8 shadow-2xl backdrop-blur-sm">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Campo de Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Campo de Senha */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Senha
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    placeholder="Sua senha"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Mensagem de erro */}
-              {erro && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
-                  {erro}
-                </div>
-              )}
-
-              {/* Botão de Login */}
-              <Button
-                type="submit"
-                className="group relative w-full overflow-hidden bg-gradient-to-r from-secondary to-accent text-base font-semibold shadow-lg transition-all hover:shadow-xl hover:from-secondary/90 hover:to-accent/90"
-                disabled={isCarregando}
+          {/* Cards de Role */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {roles.map((role, index) => (
+              <Card 
+                key={role.id}
+                className="group relative overflow-hidden border-2 border-gray-200 bg-white p-6 shadow-lg transition-all hover:border-gray-300 hover:shadow-xl"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <span className="flex items-center justify-center gap-2">
-                  {isCarregando ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Entrando...
-                    </>
-                  ) : (
-                    <>
-                      Entrar no Dashboard
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </span>
-              </Button>
-            </form>
-          </Card>
+                {/* Gradient Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 transition-opacity group-hover:opacity-5`} />
+                
+                <div className="relative space-y-4">
+                  {/* Icon */}
+                  <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br ${role.color} shadow-lg transition-transform group-hover:scale-110`}>
+                    <role.icon className="h-8 w-8 text-white" />
+                  </div>
+
+                  {/* Title & Description */}
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-gray-900">{role.title}</h3>
+                    <p className="mt-1 text-sm text-gray-600">{role.description}</p>
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-2">
+                    {role.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-gray-600">
+                        <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Button */}
+                  <Button
+                    onClick={() => handleRoleLogin(role.id as 'admin' | 'gerente' | 'atendente')}
+                    className={`w-full bg-gradient-to-r ${role.color} font-semibold shadow-md transition-all hover:shadow-lg`}
+                  >
+                    Entrar como {role.title}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Info adicional */}
+          <div className="text-center text-sm text-gray-500">
+            <p>💡 Modo de demonstração - Escolha qualquer perfil para explorar o sistema</p>
+          </div>
         </div>
       </div>
 
@@ -189,18 +222,37 @@ export default function LoginPage() {
 
             {/* Features Grid */}
             <div className="grid grid-cols-2 gap-3">
-              {features.map((feature, index) => (
-                <div 
-                  key={index}
-                  className="group rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20"
-                >
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="mb-1 text-sm font-semibold">{feature.title}</h3>
-                  <p className="text-xs text-white/80">{feature.description}</p>
+              <div className="group rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                  <MapPin className="h-5 w-5 text-white" />
                 </div>
-              ))}
+                <h3 className="mb-1 text-sm font-semibold">Rastreamento em Tempo Real</h3>
+                <p className="text-xs text-white/80">Acompanhe prestadores ao vivo no mapa</p>
+              </div>
+
+              <div className="group rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                  <Truck className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="mb-1 text-sm font-semibold">Gestão de Prestadores</h3>
+                <p className="text-xs text-white/80">Controle completo de sua rede</p>
+              </div>
+
+              <div className="group rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="mb-1 text-sm font-semibold">Relatórios Completos</h3>
+                <p className="text-xs text-white/80">Análises operacionais e financeiras</p>
+              </div>
+
+              <div className="group rounded-xl bg-white/10 p-3 backdrop-blur-sm transition-all hover:bg-white/20">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="mb-1 text-sm font-semibold">Sistema Seguro</h3>
+                <p className="text-xs text-white/80">Dados protegidos e auditoria completa</p>
+              </div>
             </div>
           </div>
         </div>
@@ -211,17 +263,6 @@ export default function LoginPage() {
           from {
             opacity: 0;
             transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
           }
           to {
             opacity: 1;
@@ -258,10 +299,6 @@ export default function LoginPage() {
 
         .animate-fade-in {
           animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.8s ease-out;
         }
 
         .animate-float {

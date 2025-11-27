@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Barlow } from 'next/font/google'
 import { ToastProvider } from '@/lib/providers/ToastProvider'
 import { ThemeProvider } from '@/lib/providers/ThemeProvider'
-import { SessionProvider } from '@/lib/providers/SessionProvider'
 import { ErrorBoundary } from '@/componentes/errors/ErrorBoundary'
 import '@/estilos/globals.css'
 
@@ -28,14 +27,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={barlow.variable} suppressHydrationWarning>
       <body className={barlow.className}>
-        <SessionProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <ToastProvider />
-              {children}
-            </ErrorBoundary>
-          </ThemeProvider>
-        </SessionProvider>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <ToastProvider />
+            {children}
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   )

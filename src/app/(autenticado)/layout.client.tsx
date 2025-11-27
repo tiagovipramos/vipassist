@@ -15,44 +15,12 @@ export function AuthenticatedLayoutClient({
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const { verificarAutenticacao } = useAuthActions()
-  const isCarregando = useIsCarregando()
-  const isAutenticado = useIsAutenticado()
   const usuario = useUsuario()
   const isCollapsed = useIsCollapsed()
   const showHeader = useShowHeader()
   
   // Enviar heartbeat para manter status online
   useHeartbeat(usuario?.id || null)
-  
-  // Verificar autenticação ao montar
-  useEffect(() => {
-    verificarAutenticacao()
-  }, [verificarAutenticacao])
-
-  // Redirecionar se não autenticado (fallback client-side)
-  useEffect(() => {
-    if (!isCarregando && !isAutenticado) {
-      router.push('/entrar')
-    }
-  }, [isAutenticado, isCarregando, router])
-
-  // Mostrar loading enquanto verifica autenticação
-  if (isCarregando) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-4 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAutenticado) {
-    return null
-  }
 
   return (
     <div className="flex h-screen bg-gray-50">

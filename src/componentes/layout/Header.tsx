@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Bell, Settings as SettingsIcon, CreditCard, HelpCircle, LogOut, User, Code, Shield } from 'lucide-react'
+import { Search, Bell, Settings as SettingsIcon, CreditCard, HelpCircle, User, Code, Shield } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/componentes/ui/avatar'
-import { useUsuario, useAuthActions } from '@/stores/authStore'
+import { useUsuario } from '@/stores/authStore'
 import { useHeaderActionButton } from '@/stores/sidebarStore'
 import { usePermissoes } from '@/stores/permissionsStore'
 import { getInitials, cn } from '@/lib/utils'
@@ -130,7 +130,6 @@ const routeInfo: Record<string, { title: string; description: string; icon: stri
 
 export function Header({ title: propTitle, description: propDescription, icon: propIcon, actionButton }: HeaderProps = {}) {
   const usuario = useUsuario()
-  const { logout } = useAuthActions()
   const pathname = usePathname()
   const router = useRouter()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
@@ -199,10 +198,6 @@ export function Header({ title: propTitle, description: propDescription, icon: p
     }
   }, [isNotificationsOpen, isUserMenuOpen])
 
-  const handleLogout = () => {
-    logout()
-    router.push('/entrar')
-  }
 
   const marcarComoLida = (id: string) => {
     setNotificacoesLista(prev => 
@@ -413,17 +408,6 @@ export function Header({ title: propTitle, description: propDescription, icon: p
                   </button>
                 )}
                 
-                {(temPermissaoSeguranca || temPermissaoAjuda || temPermissaoAPI) && (
-                  <div className="my-2 border-t" />
-                )}
-                
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>Sair</span>
-                </button>
               </div>
             </div>
           )}
