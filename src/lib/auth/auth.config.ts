@@ -52,8 +52,13 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Usuário inativo. Entre em contato com o administrador.')
           }
 
-          // Verificar senha
+          // Verificar senha com logs detalhados
+          console.log('[Auth Debug] Senha digitada:', credentials.senha)
+          console.log('[Auth Debug] Hash no banco:', usuario.senha)
+          console.log('[Auth Debug] Hash começa com:', usuario.senha.substring(0, 7))
+          
           const senhaValida = await bcrypt.compare(credentials.senha, usuario.senha)
+          console.log('[Auth Debug] Resultado da comparação:', senhaValida)
           
           if (!senhaValida) {
             throw new Error('Credenciais inválidas')
