@@ -38,14 +38,20 @@ export const useAuthStore = create<AuthState>()(
         set({ isCarregando: true, erro: null })
         
         try {
+          console.log('[AuthStore] Iniciando login...', { email })
+          
           // Autenticar com NextAuth
           const result = await signIn('credentials', {
             email,
             senha,
-            redirect: false
+            redirect: false,
+            callbackUrl: '/painel'
           })
 
+          console.log('[AuthStore] Resultado do signIn:', result)
+
           if (result?.error) {
+            console.error('[AuthStore] Erro no signIn:', result.error)
             set({
               erro: result.error === 'CredentialsSignin' 
                 ? 'Email ou senha inválidos' 
