@@ -11,7 +11,7 @@ import {
 import { Button } from '@/componentes/ui/button'
 import { Input } from '@/componentes/ui/input'
 import { Badge } from '@/componentes/ui/badge'
-import { Map, Navigation, Save, Eye, EyeOff, ExternalLink, CheckCircle2, XCircle, Copy, Check, HelpCircle } from 'lucide-react'
+import { Map, Navigation, Save, Eye, EyeOff, ExternalLink, CheckCircle2, XCircle, Copy, Check, HelpCircle, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface ModalConfiguracoesAPIProps {
@@ -26,6 +26,7 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
   const [mapboxToken, setMapboxToken] = useState(
     process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
   )
+  const [searchRadius, setSearchRadius] = useState(50) // Raio em km
   const [showGoogleKey, setShowGoogleKey] = useState(false)
   const [showMapboxToken, setShowMapboxToken] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -44,6 +45,7 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
         body: JSON.stringify({
           googleMapsKey,
           mapboxToken,
+          searchRadius: searchRadius * 1000, // Converter km para metros
         }),
       })
 
@@ -314,6 +316,71 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
                       )}
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Configuração de Raio de Busca */}
+          <div className="rounded-lg border bg-gradient-to-br from-purple-50 to-white p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <MapPin className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Raio de Busca</h3>
+                <p className="text-xs text-gray-500">Distância máxima para buscar prestadores</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Raio: <span className="text-purple-600 font-bold">{searchRadius} km</span>
+                </label>
+                <div className="text-xs text-gray-500">
+                  {searchRadius < 30 && '🏙️ Área urbana'}
+                  {searchRadius >= 30 && searchRadius < 80 && '🌆 Região metropolitana'}
+                  {searchRadius >= 80 && '🌄 Área ampla'}
+                </div>
+              </div>
+
+              {/* Slider */}
+              <input
+                type="range"
+                min="10"
+                max="150"
+                step="5"
+                value={searchRadius}
+                onChange={(e) => setSearchRadius(Number(e.target.value))}
+                className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+              />
+
+              {/* Valores de referência */}
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>10 km</span>
+                <span>50 km</span>
+                <span>100 km</span>
+                <span>150 km</span>
+              </div>
+
+              {/* Input numérico */}
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="10"
+                  max="150"
+                  step="5"
+                  value={searchRadius}
+                  onChange={(e) => setSearchRadius(Number(e.target.value))}
+                  className="w-24 text-center"
+                />
+                <span className="text-sm text-gray-600">km</span>
+                <div className="flex-1 text-xs text-gray-500">
+                  {searchRadius <= 20 && 'Ideal para cidades pequenas'}
+                  {searchRadius > 20 && searchRadius <= 50 && 'Recomendado para cidades médias'}
+                  {searchRadius > 50 && searchRadius <= 100 && 'Bom para regiões metropolitanas'}
+                  {searchRadius > 100 && 'Máximo alcance - áreas rurais'}
                 </div>
               </div>
             </div>

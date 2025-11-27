@@ -23,6 +23,27 @@ function getApiKey(): string | undefined {
   return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 }
 
+// Função para ler o raio de busca do arquivo .env em runtime
+function getSearchRadius(): number {
+  try {
+    const envPath = path.join(process.cwd(), '.env')
+    const envContent = fs.readFileSync(envPath, 'utf-8')
+    const lines = envContent.split('\n')
+    
+    for (const line of lines) {
+      if (line.startsWith('GOOGLE_MAPS_SEARCH_RADIUS=')) {
+        const radius = parseInt(line.split('=')[1].trim())
+        return isNaN(radius) ? 50000 : radius // Padrão 50km se inválido
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao ler raio de busca do .env:', error)
+  }
+  
+  // Fallback para 50km (50000 metros)
+  return 50000
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -62,7 +83,9 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const searchRadius = raio || 50000
+      // Usar raio configurado ou o fornecido na requisição
+      const configuredRadius = getSearchRadius()
+      const searchRadius = raio || configuredRadius
       url = `${baseUrl}/nearbysearch/json?location=${latitude},${longitude}&radius=${searchRadius}&keyword=reboque+guincho&key=${API_KEY}&language=pt-BR`
     } else if (tipo === 'geocode') {
       // Geocoding

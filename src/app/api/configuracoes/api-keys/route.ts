@@ -5,7 +5,7 @@ import path from 'path'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { googleMapsKey, mapboxToken } = body
+    const { googleMapsKey, mapboxToken, searchRadius } = body
 
     // Caminho do arquivo .env
     const envPath = path.join(process.cwd(), '.env')
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const updatedLines: string[] = []
     let googleMapsUpdated = false
     let mapboxUpdated = false
+    let searchRadiusUpdated = false
 
     for (const line of lines) {
       if (line.startsWith('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=')) {
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest) {
       } else if (line.startsWith('NEXT_PUBLIC_MAPBOX_TOKEN=')) {
         updatedLines.push(`NEXT_PUBLIC_MAPBOX_TOKEN=${mapboxToken}`)
         mapboxUpdated = true
+      } else if (line.startsWith('GOOGLE_MAPS_SEARCH_RADIUS=')) {
+        updatedLines.push(`GOOGLE_MAPS_SEARCH_RADIUS=${searchRadius}`)
+        searchRadiusUpdated = true
       } else {
         updatedLines.push(line)
       }
@@ -43,6 +47,9 @@ export async function POST(request: NextRequest) {
     }
     if (!mapboxUpdated) {
       updatedLines.push(`NEXT_PUBLIC_MAPBOX_TOKEN=${mapboxToken}`)
+    }
+    if (!searchRadiusUpdated && searchRadius) {
+      updatedLines.push(`GOOGLE_MAPS_SEARCH_RADIUS=${searchRadius}`)
     }
 
     // Escrever de volta no arquivo
