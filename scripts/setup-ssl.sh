@@ -27,8 +27,9 @@ fi
 # Variáveis
 DOMAIN="conectiva24h.com.br"
 EMAIL="admin@conectiva24h.com.br"  # Altere para seu email
-NGINX_CONF="/root/vipassist/nginx/nginx.conf"
-SSL_DIR="/root/vipassist/nginx/ssl"
+PROJECT_DIR="/opt/vipassist"
+NGINX_CONF="${PROJECT_DIR}/nginx/nginx.conf"
+SSL_DIR="${PROJECT_DIR}/nginx/ssl"
 
 echo -e "${YELLOW}Verificando pré-requisitos...${NC}"
 
@@ -57,7 +58,7 @@ apt-get install -y certbot python3-certbot-nginx
 
 # 3. Parar containers temporariamente para liberar porta 80
 echo -e "${YELLOW}Parando containers Docker...${NC}"
-cd /root/vipassist
+cd ${PROJECT_DIR}
 docker-compose -f docker-compose.full.yml down
 
 # 4. Obter certificado SSL
@@ -260,14 +261,14 @@ EOF
 echo -e "${YELLOW}Configurando renovação automática...${NC}"
 cat > /etc/cron.d/certbot-renew << 'EOF'
 # Renovar certificados SSL automaticamente
-0 3 * * * root certbot renew --quiet --deploy-hook "cp /etc/letsencrypt/live/conectiva24h.com.br/fullchain.pem /root/vipassist/nginx/ssl/cert.pem && cp /etc/letsencrypt/live/conectiva24h.com.br/privkey.pem /root/vipassist/nginx/ssl/key.pem && cd /root/vipassist && docker-compose -f docker-compose.full.yml restart nginx"
+0 3 * * * root certbot renew --quiet --deploy-hook "cp /etc/letsencrypt/live/conectiva24h.com.br/fullchain.pem /opt/vipassist/nginx/ssl/cert.pem && cp /etc/letsencrypt/live/conectiva24h.com.br/privkey.pem /opt/vipassist/nginx/ssl/key.pem && cd /opt/vipassist && docker-compose -f docker-compose.full.yml restart nginx"
 EOF
 
 chmod 644 /etc/cron.d/certbot-renew
 
 # 9. Atualizar .env com HTTPS
 echo -e "${YELLOW}Atualizando variáveis de ambiente...${NC}"
-cd /root/vipassist
+cd ${PROJECT_DIR}
 if grep -q "NEXTAUTH_URL=" .env; then
     sed -i 's|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://conectiva24h.com.br|' .env
 else
