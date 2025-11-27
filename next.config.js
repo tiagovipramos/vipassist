@@ -92,17 +92,12 @@ const nextConfig = {
     return config
   },
   
-  // Security Headers (Enterprise-grade)
+  // Security Headers (HTTP-compatible for development)
   async headers() {
     return [
       {
         source: '/:path*',
         headers: [
-          // HSTS - Force HTTPS for 1 year
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
           // Prevent clickjacking attacks
           {
             key: 'X-Frame-Options',
@@ -133,47 +128,24 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), payment=()',
           },
-          // Content Security Policy (CSP) - Enterprise-grade Security
-          // ✅ CORRIGIDO: CSP compatível com Next.js em produção
-          // Next.js usa inline scripts para chunks, então precisamos de 'unsafe-inline' OU nonces
-          // Como não estamos usando nonces, mantemos 'unsafe-inline' mas com outras proteções
+          // Content Security Policy (CSP) - HTTP-compatible
           {
             key: 'Content-Security-Policy',
-            value: process.env.NODE_ENV === 'production'
-              ? [
-                  "default-src 'self'",
-                  // ✅ CORRIGIDO: Next.js precisa de 'unsafe-inline' para chunks em produção
-                  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-                  // ✅ CORRIGIDO: Tailwind e styled-jsx precisam de 'unsafe-inline'
-                  "style-src 'self' 'unsafe-inline'",
-                  "img-src 'self' blob: data: https:",
-                  "font-src 'self' data:",
-                  "connect-src 'self' wss: https:", // WebSocket + API
-                  "media-src 'self' blob: data:",
-                  "worker-src 'self' blob:",
-                  "child-src 'self' blob:",
-                  "object-src 'none'",
-                  "frame-ancestors 'none'",
-                  "base-uri 'self'",
-                  "form-action 'self'",
-                  "upgrade-insecure-requests",
-                ].join('; ')
-              : [
-                  // ⚠️ DEV: Permissivo para Next.js HMR
-                  "default-src 'self'",
-                  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-                  "style-src 'self' 'unsafe-inline'",
-                  "img-src 'self' blob: data: https:",
-                  "font-src 'self' data:",
-                  "connect-src 'self' ws: wss: https:",
-                  "media-src 'self' blob: data:",
-                  "worker-src 'self' blob:",
-                  "child-src 'self' blob:",
-                  "object-src 'none'",
-                  "frame-ancestors 'self'",
-                  "base-uri 'self'",
-                  "form-action 'self'",
-                ].join('; '),
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' blob: data: https: http:",
+              "font-src 'self' data:",
+              "connect-src 'self' ws: wss: https: http:",
+              "media-src 'self' blob: data:",
+              "worker-src 'self' blob:",
+              "child-src 'self' blob:",
+              "object-src 'none'",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
           },
         ],
       },
