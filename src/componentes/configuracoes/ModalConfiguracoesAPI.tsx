@@ -47,9 +47,15 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
         }),
       })
 
+      // Verificar se a resposta é JSON válido
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Resposta inválida do servidor. Verifique se a API está configurada corretamente.')
+      }
+
       const data = await response.json()
 
-      if (data.success) {
+      if (response.ok && data.success) {
         toast.success('Configurações salvas com sucesso!')
         setIsSaving(false)
         onClose()
@@ -61,12 +67,14 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
           })
         }, 1000)
       } else {
-        toast.error('Erro ao salvar configurações')
+        const errorMessage = data.error || data.details || 'Erro ao salvar configurações'
+        toast.error(errorMessage)
         setIsSaving(false)
       }
     } catch (error) {
       console.error('Erro ao salvar:', error)
-      toast.error('Erro ao salvar configurações')
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao conectar com o servidor'
+      toast.error(errorMessage)
       setIsSaving(false)
     }
   }
