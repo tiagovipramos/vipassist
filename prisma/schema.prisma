@@ -41,7 +41,7 @@ model Usuario {
   @@index([role])
   @@index([ativo])
   @@index([setorId])
-  @@map("usuarios")
+  @@map("Usuario")
 }
 
 // ==========================================
