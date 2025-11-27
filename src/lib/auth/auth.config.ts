@@ -16,10 +16,10 @@ export const authOptions: NextAuthOptions = {
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        senha: { label: 'Senha', type: 'password' }
+        password: { label: 'Senha', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.senha) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error('Email e senha são obrigatórios')
         }
 
@@ -53,11 +53,11 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Verificar senha com logs detalhados
-          console.log('[Auth Debug] Senha digitada:', credentials.senha)
+          console.log('[Auth Debug] Senha digitada:', credentials.password)
           console.log('[Auth Debug] Hash no banco:', usuario.senha)
           console.log('[Auth Debug] Hash começa com:', usuario.senha.substring(0, 7))
           
-          const senhaValida = await bcrypt.compare(credentials.senha, usuario.senha)
+          const senhaValida = await bcrypt.compare(credentials.password, usuario.senha)
           console.log('[Auth Debug] Resultado da comparação:', senhaValida)
           
           if (!senhaValida) {
