@@ -69,8 +69,9 @@ export function ModalConfiguracoesAPI({ isOpen, onClose }: ModalConfiguracoesAPI
           })
         }, 1000)
       } else {
-        const errorMessage = data.error || data.details || 'Erro ao salvar configurações'
-        toast.error(errorMessage)
+        const errorMessage = data.error || data.details || 'Erro desconhecido ao salvar configurações'
+        console.error('Erro detalhado:', data)
+        toast.error(`Erro: ${errorMessage}`)
         setIsSaving(false)
       }
     } catch (error) {

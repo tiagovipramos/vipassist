@@ -12,11 +12,16 @@ export async function POST(request: NextRequest) {
     
     // Ler o arquivo .env atual
     let envContent = ''
+    let fileExists = false
+    
     try {
       envContent = fs.readFileSync(envPath, 'utf-8')
+      fileExists = true
     } catch (error) {
       // Se o arquivo não existir, criar um novo
-      envContent = ''
+      console.log('Arquivo .env não existe, será criado')
+      envContent = '# Configurações de API\n'
+      fileExists = false
     }
 
     // Atualizar ou adicionar as variáveis
@@ -54,12 +59,27 @@ export async function POST(request: NextRequest) {
 
     // Escrever de volta no arquivo
     const newEnvContent = updatedLines.join('\n')
-    fs.writeFileSync(envPath, newEnvContent, 'utf-8')
-
-    return NextResponse.json({
-      success: true,
-      message: 'Configurações salvas com sucesso. Reinicie o servidor para aplicar as mudanças.'
-    })
+    
+    try {
+      fs.writeFileSync(envPath, newEnvContent, 'utf-8')
+      
+      return NextResponse.json({
+        success: true,
+        message: fileExists 
+          ? 'Configurações atualizadas com sucesso. Reinicie o servidor para aplicar as mudanças.'
+          : 'Arquivo .env criado com sucesso. Reinicie o servidor para aplicar as mudanças.'
+      })
+    } catch (writeError) {
+      console.error('Erro ao escrever no arquivo .env:', writeError)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Erro ao salvar no arquivo .env',
+          details: writeError instanceof Error ? writeError.message : 'Erro de permissão ao escrever no arquivo'
+        },
+        { status: 500 }
+      )
+    }
   } catch (error) {
     console.error('Erro ao salvar configurações:', error)
     return NextResponse.json(
