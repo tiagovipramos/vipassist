@@ -33,6 +33,7 @@ WORKDIR /app
 
 # Argumentos de build
 ARG NEXTAUTH_URL
+ARG DATABASE_URL
 
 # Copiar node_modules com TODAS as dependências
 COPY --from=deps /app/node_modules ./node_modules
@@ -42,6 +43,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV DATABASE_URL=$DATABASE_URL
 
 # Build da aplicação
 RUN npm run build

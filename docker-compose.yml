@@ -49,6 +49,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+        DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-vipassist}?schema=public
     container_name: vipassist-app
     restart: unless-stopped
     depends_on:
