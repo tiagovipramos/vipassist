@@ -168,6 +168,9 @@ sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\"|" .env
 sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
 sed -i "s|^BACKUP_ENCRYPTION_KEY=.*|BACKUP_ENCRYPTION_KEY=\"$BACKUP_ENCRYPTION_KEY\"|" .env
 
+# Atualizar DATABASE_URL com a senha gerada
+sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://vipassist:$POSTGRES_PASSWORD@postgres:5432/vipassist?schema=public\"|" .env
+
 log_success "Senhas geradas e configuradas"
 
 # Salvar senhas em arquivo seguro
@@ -192,6 +195,9 @@ log_success "Credenciais salvas em: /root/vipassist-credentials.txt"
 # 9. BUILD E DEPLOY COM DOCKER
 # ============================================
 log_info "Fazendo build e deploy com Docker..."
+
+# Parar containers antigos se existirem
+docker compose -f docker-compose.full.yml down 2>/dev/null || true
 
 # Build das imagens
 docker compose -f docker-compose.full.yml build
