@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const baseUrl = 'https://maps.googleapis.com/maps/api/place'
 
     if (tipo === 'texto') {
-      // Text Search
+      // Text Search - Primeiro geocodificar, depois buscar por proximidade
       if (!query) {
         return NextResponse.json(
           { error: 'Query é obrigatório para busca por texto' },
@@ -70,10 +70,27 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const searchQuery = `reboque guincho ${query}`
-      url = `${baseUrl}/textsearch/json?query=${encodeURIComponent(
-        searchQuery
+      // Passo 1: Geocodificar o endereço/bairro/CEP para obter coordenadas
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        query
       )}&key=${API_KEY}&language=pt-BR`
+
+      const geocodeResponse = await fetch(geocodeUrl)
+      const geocodeData = await geocodeResponse.json()
+
+      if (geocodeData.status !== 'OK' || geocodeData.results.length === 0) {
+        return NextResponse.json(
+          { error: 'Não foi possível encontrar o endereço informado' },
+          { status: 400 }
+        )
+      }
+
+      // Passo 2: Usar as coordenadas para busca por proximidade
+      const location = geocodeData.results[0].geometry.location
+      const configuredRadius = getSearchRadius()
+      const searchRadius = raio || configuredRadius
+
+      url = `${baseUrl}/nearbysearch/json?location=${location.lat},${location.lng}&radius=${searchRadius}&keyword=reboque+guincho&key=${API_KEY}&language=pt-BR`
     } else if (tipo === 'proximo') {
       // Nearby Search
       if (!latitude || !longitude) {
