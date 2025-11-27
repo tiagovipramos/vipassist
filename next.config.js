@@ -46,6 +46,12 @@ const nextConfig = {
   // ✅ CRÍTICO: Habilitar output standalone para Docker
   output: 'standalone',
   
+  // Forçar inclusão de bcryptjs no standalone
+  experimental: {
+    ...nextConfig.experimental,
+    serverComponentsExternalPackages: ['bcryptjs'],
+  },
+  
   // Configurações de bundle
   webpack: (config, { isServer }) => {
     // Otimizar chunks para melhor caching
