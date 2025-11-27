@@ -41,16 +41,11 @@ const nextConfig = {
   // Experimental features para melhor performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns'], // Tree-shaking otimizado
+    serverComponentsExternalPackages: ['bcryptjs'], // Forçar inclusão de bcryptjs no standalone
   },
   
   // ✅ CRÍTICO: Habilitar output standalone para Docker
   output: 'standalone',
-  
-  // Forçar inclusão de bcryptjs no standalone
-  experimental: {
-    ...nextConfig.experimental,
-    serverComponentsExternalPackages: ['bcryptjs'],
-  },
   
   // Configurações de bundle
   webpack: (config, { isServer }) => {
