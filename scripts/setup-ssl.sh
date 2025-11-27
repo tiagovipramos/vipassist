@@ -59,7 +59,7 @@ apt-get install -y certbot python3-certbot-nginx
 # 3. Parar containers temporariamente para liberar porta 80
 echo -e "${YELLOW}Parando containers Docker...${NC}"
 cd ${PROJECT_DIR}
-docker-compose -f docker-compose.full.yml down
+docker compose -f docker-compose.full.yml down
 
 # 4. Obter certificado SSL
 echo -e "${YELLOW}Obtendo certificado SSL do Let's Encrypt...${NC}"
@@ -261,7 +261,7 @@ EOF
 echo -e "${YELLOW}Configurando renovação automática...${NC}"
 cat > /etc/cron.d/certbot-renew << 'EOF'
 # Renovar certificados SSL automaticamente
-0 3 * * * root certbot renew --quiet --deploy-hook "cp /etc/letsencrypt/live/conectiva24h.com.br/fullchain.pem /opt/vipassist/nginx/ssl/cert.pem && cp /etc/letsencrypt/live/conectiva24h.com.br/privkey.pem /opt/vipassist/nginx/ssl/key.pem && cd /opt/vipassist && docker-compose -f docker-compose.full.yml restart nginx"
+0 3 * * * root certbot renew --quiet --deploy-hook "cp /etc/letsencrypt/live/conectiva24h.com.br/fullchain.pem /opt/vipassist/nginx/ssl/cert.pem && cp /etc/letsencrypt/live/conectiva24h.com.br/privkey.pem /opt/vipassist/nginx/ssl/key.pem && cd /opt/vipassist && docker compose -f docker-compose.full.yml restart nginx"
 EOF
 
 chmod 644 /etc/cron.d/certbot-renew
@@ -277,7 +277,7 @@ fi
 
 # 10. Reiniciar containers
 echo -e "${YELLOW}Iniciando containers com SSL...${NC}"
-docker-compose -f docker-compose.full.yml up -d
+docker compose -f docker-compose.full.yml up -d
 
 # 11. Aguardar containers iniciarem
 echo -e "${YELLOW}Aguardando containers iniciarem...${NC}"
@@ -285,7 +285,7 @@ sleep 10
 
 # 12. Verificar status
 echo -e "${YELLOW}Verificando status dos containers...${NC}"
-docker-compose -f docker-compose.full.yml ps
+docker compose -f docker-compose.full.yml ps
 
 # 13. Testar configuração SSL
 echo -e "${YELLOW}Testando configuração SSL...${NC}"
@@ -321,4 +321,4 @@ echo -e "${YELLOW}Para testar a renovação:${NC}"
 echo "certbot renew --dry-run"
 echo ""
 echo -e "${GREEN}Logs do Nginx:${NC}"
-echo "docker-compose -f docker-compose.full.yml logs -f nginx"
+echo "docker compose -f docker-compose.full.yml logs -f nginx"
