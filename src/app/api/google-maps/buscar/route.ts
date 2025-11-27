@@ -1,12 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrestadorGoogleMaps } from '@/tipos/googleMaps'
+import fs from 'fs'
+import path from 'path'
 
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+// Função para ler a API key do arquivo .env em runtime
+function getApiKey(): string | undefined {
+  try {
+    const envPath = path.join(process.cwd(), '.env')
+    const envContent = fs.readFileSync(envPath, 'utf-8')
+    const lines = envContent.split('\n')
+    
+    for (const line of lines) {
+      if (line.startsWith('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=')) {
+        return line.split('=')[1].trim()
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao ler .env:', error)
+  }
+  
+  // Fallback para variável de ambiente
+  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { tipo, query, latitude, longitude, raio } = body
+
+    const API_KEY = getApiKey()
 
     if (!API_KEY) {
       return NextResponse.json(
