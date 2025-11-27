@@ -63,6 +63,9 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 
+# Ajustar permissões para o usuário nextjs
+RUN chown -R nextjs:nodejs /app
+
 # Variáveis de ambiente
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
