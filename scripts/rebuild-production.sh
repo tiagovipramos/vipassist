@@ -64,7 +64,7 @@ fi
 
 echo ""
 log_step "1/6 - Parando containers..."
-docker-compose -f docker-compose.full.yml down
+docker compose -f docker-compose.full.yml down
 
 echo ""
 log_step "2/6 - Removendo imagem antiga da aplicação..."
@@ -76,11 +76,11 @@ docker builder prune -f
 
 echo ""
 log_step "4/6 - Fazendo rebuild da aplicação (isso pode levar alguns minutos)..."
-docker-compose -f docker-compose.full.yml build --no-cache app
+docker compose -f docker-compose.full.yml build --no-cache app
 
 echo ""
 log_step "5/6 - Iniciando serviços..."
-docker-compose -f docker-compose.full.yml up -d
+docker compose -f docker-compose.full.yml up -d
 
 echo ""
 log_step "6/6 - Aguardando containers iniciarem (30 segundos)..."
@@ -88,7 +88,7 @@ sleep 30
 
 echo ""
 log_info "Verificando status dos containers..."
-docker-compose -f docker-compose.full.yml ps
+docker compose -f docker-compose.full.yml ps
 
 echo ""
 log_info "Verificando logs da aplicação..."

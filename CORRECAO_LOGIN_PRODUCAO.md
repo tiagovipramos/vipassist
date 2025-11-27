@@ -16,11 +16,19 @@ Loading failed for the <script> with source
 
 ## 🔍 Diagnóstico
 
-O problema está relacionado a **arquivos estáticos do Next.js não sendo servidos corretamente**. Isso indica que:
+Após executar o script de diagnóstico, identificamos o **problema real**:
 
-1. **O Next.js não foi buildado corretamente** - O diretório `.next` pode não existir ou estar incompleto
-2. **Variáveis de ambiente incorretas** - `NEXTAUTH_URL` pode estar configurada incorretamente
-3. **Next.js não está rodando em modo produção** - Pode estar tentando rodar em modo desenvolvimento
+**❌ ERRO CRÍTICO**: A tabela no banco de dados se chama `usuarios` (minúsculo), mas o Prisma/código está procurando por `Usuario` (com U maiúsculo)!
+
+```
+ERROR: relation "Usuario" does not exist
+LINE 1: SELECT id, nome, email, role, ativo FROM "Usuario" LIMIT 5;
+```
+
+Outros problemas identificados:
+1. **Script de rebuild** - Usa `docker-compose` mas o servidor tem `docker compose` (sem hífen)
+2. **Arquivos estáticos** - Estão sendo servidos corretamente (build existe)
+3. **Variáveis de ambiente** - Estão corretas
 
 ## ✅ Solução
 
@@ -42,21 +50,33 @@ Este script irá verificar:
 - Conexão com banco de dados
 - Usuários cadastrados
 
-### Passo 2: Rebuild da Aplicação (Solução Principal)
+### Passo 2: Corrigir Nome da Tabela (SOLUÇÃO PRINCIPAL)
 
-Se o diagnóstico mostrar que o `.next` não existe ou está incompleto:
+O problema é que a tabela se chama `usuarios` mas o código espera `Usuario`:
 
 ```bash
-cd /caminho/do/projeto
+cd /opt/vipassist
+chmod +x scripts/fix-table-name.sh
+./scripts/fix-table-name.sh
+```
+
+Este script irá:
+1. Verificar tabelas existentes
+2. Renomear `usuarios` para `Usuario`
+3. Verificar usuários na tabela
+4. Reiniciar a aplicação
+
+### Passo 2b: Rebuild da Aplicação (Se Necessário)
+
+Se após corrigir a tabela ainda houver problemas:
+
+```bash
+cd /opt/vipassist
 chmod +x scripts/rebuild-production.sh
 ./scripts/rebuild-production.sh
 ```
 
-Este script irá:
-1. Parar todos os containers
-2. Remover a imagem antiga
-3. Fazer rebuild completo sem cache
-4. Reiniciar todos os serviços
+**NOTA**: O script foi corrigido para usar `docker compose` (sem hífen)
 
 ### Passo 3: Verificar Variáveis de Ambiente
 
@@ -146,25 +166,33 @@ docker-compose -f docker-compose.full.yml restart app
 
 ## 🎯 Causas Comuns e Soluções
 
-### 1. Next.js não buildado
-**Sintoma**: Erros de MIME type, arquivos CSS/JS não carregam
-**Solução**: Execute `./scripts/rebuild-production.sh`
+### 1. ⚠️ Nome da tabela incorreto (PROBLEMA ATUAL)
+**Sintoma**: `ERROR: relation "Usuario" does not exist`
+**Solução**: Execute `./scripts/fix-table-name.sh`
 
-### 2. NEXTAUTH_URL incorreto
+### 2. docker-compose vs docker compose
+**Sintoma**: `docker-compose: command not found`
+**Solução**: Use `docker compose` (sem hífen) - scripts já corrigidos
+
+### 3. NEXTAUTH_URL incorreto
 **Sintoma**: Login não funciona, mas página carrega
-**Solução**: Corrija no `.env` e reinicie: `docker-compose -f docker-compose.full.yml restart app`
+**Solução**: Corrija no `.env` e reinicie: `docker compose -f docker-compose.full.yml restart app`
 
-### 3. Sem usuários no banco
+### 4. Sem usuários no banco
 **Sintoma**: "Credenciais inválidas" mesmo com dados corretos
 **Solução**: Crie usuário admin com o comando seed
 
-### 4. Banco de dados não conectado
+### 5. Banco de dados não conectado
 **Sintoma**: Erros de conexão nos logs
 **Solução**: Verifique `DATABASE_URL` e se o PostgreSQL está rodando
 
-### 5. NEXTAUTH_SECRET não configurado
+### 6. NEXTAUTH_SECRET não configurado
 **Sintoma**: Erros de JWT nos logs
 **Solução**: Gere um secret: `openssl rand -base64 32` e adicione ao `.env`
+
+### 7. Next.js não buildado
+**Sintoma**: Erros de MIME type, arquivos CSS/JS não carregam
+**Solução**: Execute `./scripts/rebuild-production.sh`
 
 ## 📋 Checklist de Verificação
 
