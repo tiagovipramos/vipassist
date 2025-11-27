@@ -87,3 +87,4 @@ src/lib/auth/lucia.ts
 src/app/api/auth/login/
 src/app/api/auth/logout/
 src/app/api/auth/register/
+src/app/api/auth/session/
