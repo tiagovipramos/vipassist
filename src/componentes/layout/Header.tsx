@@ -3,13 +3,14 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Bell, Settings as SettingsIcon, CreditCard, HelpCircle, User, Code, Shield } from 'lucide-react'
+import { Search, Bell, Settings as SettingsIcon, CreditCard, HelpCircle, User, Code, Shield, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/componentes/ui/avatar'
 import { useUsuario } from '@/stores/authStore'
 import { useHeaderActionButton } from '@/stores/sidebarStore'
 import { usePermissoes } from '@/stores/permissionsStore'
 import { getInitials, cn } from '@/lib/utils'
 import { ModalConfiguracoesAPI } from '@/componentes/configuracoes/ModalConfiguracoesAPI'
+import { signOut } from 'next-auth/react'
 
 interface Notificacao {
   id: string
@@ -407,7 +408,20 @@ export function Header({ title: propTitle, description: propDescription, icon: p
                     <span>API</span>
                   </button>
                 )}
-                
+              </div>
+
+              {/* Logout Button */}
+              <div className="border-t p-2">
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(false)
+                    signOut({ callbackUrl: '/entrar' })
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Sair</span>
+                </button>
               </div>
             </div>
           )}
