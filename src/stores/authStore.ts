@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
           // Autenticar com NextAuth
           const result = await signIn('credentials', {
             email,
-            senha,
+            password: senha,
             redirect: false,
             callbackUrl: '/painel'
           })
