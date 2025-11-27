@@ -31,6 +31,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Argumentos de build
+ARG NEXTAUTH_URL
+
 # Copiar node_modules com TODAS as dependências
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -38,6 +41,7 @@ COPY . .
 # Variáveis de ambiente para build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
 
 # Build da aplicação
 RUN npm run build

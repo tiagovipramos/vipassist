@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXTAUTH_URL: ${NEXTAUTH_URL}
     container_name: vipassist-app
     restart: always
     depends_on:
