@@ -68,6 +68,7 @@ services:
     volumes:
       - ./public/fotos:/app/public/fotos
       - app_logs:/app/logs
+      - ./.env:/app/.env
     networks:
       - vipassist-network
     healthcheck:
