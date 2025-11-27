@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/auth.config'
 import fs from 'fs'
 import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Não autenticado' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
     const { googleMapsKey, mapboxToken } = body
 
@@ -80,16 +68,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Não autenticado' },
-        { status: 401 }
-      )
-    }
-
     // Retornar as chaves atuais (mascaradas por segurança)
     const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
     const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
